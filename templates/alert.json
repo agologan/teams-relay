@@ -1,0 +1,27 @@
+{
+  "type": "AdaptiveCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "{{default title "Alert"}}",
+      "weight": "Bolder",
+      "size": "Medium",
+      "wrap": true
+    },
+    {
+      "type": "TextBlock",
+      "text": "{{default message text}}",
+      "wrap": true
+    },
+    {
+      "type": "FactSet",
+      "facts": [
+        { "title": "Severity", "value": "{{escapeJson severity}}" },
+        { "title": "Service", "value": "{{escapeJson service}}" },
+        { "title": "Environment", "value": "{{escapeJson environment}}" }
+      ]
+    }
+  ]
+}
