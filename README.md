@@ -255,7 +255,3 @@ Package manifest:
 ```sh
 pnpm manifest
 ```
-
-## License
-
-MIT

@@ -14,7 +14,7 @@
     "test": "echo \"No tests yet\""
   },
   "author": "",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1052.0",
     "@aws-sdk/lib-dynamodb": "^3.1052.0",
