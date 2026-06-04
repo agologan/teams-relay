@@ -1,8 +1,7 @@
-FROM node:24-slim AS base
+FROM node:24-alpine AS base
 
 ENV PNPM_HOME=/pnpm
-ENV PATH=$PNPM_HOME:$PATH
-
+ENV PATH=$PNPM_HOME/bin:$PATH
 RUN corepack enable
 
 WORKDIR /app
@@ -10,37 +9,27 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 
-FROM base AS dev
 
-COPY tsconfig.json ./
-COPY src ./src
-COPY templates ./templates
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-EXPOSE 3000
-
-CMD ["pnpm", "dev"]
 
 FROM base AS build
-
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM node:24-slim AS runner
 
-ENV PNPM_HOME=/pnpm
-ENV PATH=$PNPM_HOME:$PATH
-ENV NODE_ENV=production
+FROM build AS dev
+EXPOSE 3000
+CMD ["pnpm", "dev"]
 
-RUN corepack enable
 
-WORKDIR /app
-
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --prod --frozen-lockfile
-
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/templates ./templates
+FROM base
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/dist /app/dist
 
 EXPOSE 3000
+USER node
 
-CMD ["pnpm", "start"]
+CMD ["node", "dist/server.js"]
