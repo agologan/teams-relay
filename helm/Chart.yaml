@@ -1,0 +1,6 @@
+apiVersion: v2
+name: teams-relay
+description: Replaces legacy Microsoft Teams incoming webhooks with a bot-backed relay service.
+type: application
+version: 0.1.0
+appVersion: "latest"
