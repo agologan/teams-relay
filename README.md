@@ -1,4 +1,7 @@
-# Teams Relay
+<div align="center">
+  <img src="docs/logo.svg" alt="Logo" width="128">
+  <h1>Teams Relay</h1>
+</div>
 
 Teams Relay replaces legacy Microsoft Teams incoming webhooks with a bot-backed relay service.
 
