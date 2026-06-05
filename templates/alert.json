@@ -5,14 +5,14 @@
   "body": [
     {
       "type": "TextBlock",
-      "text": "{{default title "Alert"}}",
+      "text": "{{escapeJson (default title 'Alert')}}",
       "weight": "Bolder",
       "size": "Medium",
       "wrap": true
     },
     {
       "type": "TextBlock",
-      "text": "{{default message text}}",
+      "text": "{{escapeJson (default message text)}}",
       "wrap": true
     },
     {

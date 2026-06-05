@@ -5,7 +5,7 @@
   "body": [
     {
       "type": "TextBlock",
-      "text": "{{default title "Webhook notification"}}",
+      "text": "{{escapeJson (default title 'Webhook notification')}}",
       "weight": "Bolder",
       "size": "Medium",
       "wrap": true
@@ -13,9 +13,9 @@
     {
       "type": "FactSet",
       "facts": [
-        {{#eachFacts this}}
-        { "title": "{{escapeJson key}}", "value": "{{escapeJson value}}" }{{#unless last}},{{/unless}}
-        {{/eachFacts}}
+        {{#each this}}
+        { "title": "{{escapeJson @key}}", "value": "{{escapeJson this}}" }{{#unless @last}},{{/unless}}
+        {{/each}}
       ]
     }
   ]
