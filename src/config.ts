@@ -11,7 +11,7 @@ const envSchema = z.object({
   TENANT_ID: z.string().optional(),
   BOT_APP_TYPE: z.enum(['SingleTenant', 'MultiTenant', 'UserAssignedMSI']).default('SingleTenant'),
   STORAGE_BACKEND: z.enum(['dynamodb', 'sqlite']).default('dynamodb'),
-  DYNAMODB_ENDPOINT: z.string().default('http://localhost:8000'),
+  DYNAMODB_ENDPOINT: z.string().optional(),
   DYNAMODB_REGION: z.string().default('us-east-1'),
   DYNAMODB_TABLE: z.string().default('teams-relay'),
   SQLITE_FILENAME: z.string().default('teams-relay.sqlite'),

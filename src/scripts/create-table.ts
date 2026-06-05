@@ -6,13 +6,19 @@ import {
 
 import { config } from '../config'
 
+const isLocalEndpoint = config.dynamo.endpoint?.includes('localhost') || config.dynamo.endpoint?.includes('127.0.0.1') || config.dynamo.endpoint?.includes('dynamodb-local')
+
 const client = new DynamoDBClient({
   region: config.dynamo.region,
-  endpoint: config.dynamo.endpoint,
-  credentials: {
-    accessKeyId: 'local',
-    secretAccessKey: 'local',
-  },
+  ...(config.dynamo.endpoint ? { endpoint: config.dynamo.endpoint } : {}),
+  ...(isLocalEndpoint
+    ? {
+        credentials: {
+          accessKeyId: 'local',
+          secretAccessKey: 'local',
+        },
+      }
+    : {}),
 })
 
 const tableName = config.dynamo.tableName
