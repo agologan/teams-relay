@@ -6,7 +6,9 @@ updates:
       interval: "weekly"
     cooldown:
       default-days: 14
+    commit-message:
+      prefix: deps(npm)
     groups:
-      all-minor-patch:
+      npm-minor:
         patterns: ["*"]
         update-types: ["minor", "patch"]
