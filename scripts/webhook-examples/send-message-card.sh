@@ -13,7 +13,7 @@ TEAM_ENC="$(urlencode "$TEAM_ID")"
 CHANNEL_ENC="$(urlencode "$CHANNEL_ID")"
 
 curl -fsS \
-  -X POST "${BASE_URL}/webhook/fwd/${TEAM_ENC}/${CHANNEL_ENC}" \
+  -X POST "${BASE_URL}/webhook/raw/${TEAM_ENC}/${CHANNEL_ENC}" \
   -H 'Content-Type: application/json' \
   -d @- <<'JSON'
 {

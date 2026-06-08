@@ -199,7 +199,7 @@ const forwardWebhook = async (
 }
 
 const registerWebhookRoutes = (targetApp: Hono, publicEndpoint: boolean) => {
-  targetApp.post('/webhook/fwd/:team/:channel', async (c) => {
+  targetApp.post('/webhook/raw/:team/:channel', async (c) => {
     if (webhookAuthRequired(publicEndpoint)) {
       const authError = requireWebhookToken(c)
 
@@ -282,7 +282,7 @@ const internalServer = createServer(async (req, res) => {
 server.listen(config.port, () => {
   console.log(`[server] listening on http://localhost:${config.port}`)
   console.log(`[server] bot endpoint http://localhost:${config.port}/api/messages`)
-  console.log(`[server] public webhook endpoint http://localhost:${config.port}/webhook/fwd/{team}/{channel}?token={token}`)
+  console.log(`[server] public webhook endpoint http://localhost:${config.port}/webhook/raw/{team}/{channel}?token={token}`)
   console.log(`[server] public templated webhook endpoint http://localhost:${config.port}/webhook/{keyword}/{team}/{channel}?token={token}`)
 })
 
@@ -291,6 +291,6 @@ internalServer.listen(config.internalPort, () => {
   console.log(`[internal] health endpoint http://localhost:${config.internalPort}/healthz`)
   console.log(`[internal] metrics endpoint http://localhost:${config.internalPort}/metrics`)
   console.log(`[internal] webhooks index http://localhost:${config.internalPort}/webhooks`)
-  console.log(`[internal] webhook endpoint http://localhost:${config.internalPort}/webhook/fwd/{team}/{channel}`)
+  console.log(`[internal] webhook endpoint http://localhost:${config.internalPort}/webhook/raw/{team}/{channel}`)
   console.log(`[internal] templated webhook endpoint http://localhost:${config.internalPort}/webhook/{keyword}/{team}/{channel}`)
 })

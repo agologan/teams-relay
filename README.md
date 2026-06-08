@@ -167,7 +167,7 @@ Forward message:
 curl -X POST \
   -H 'content-type: application/json' \
   -d '{"text":"Hello from Teams Relay"}' \
-  'https://YOUR_PUBLIC_DOMAIN/webhook/fwd/{team}/{channel}?token=replace-with-long-random-token'
+  'https://YOUR_PUBLIC_DOMAIN/webhook/raw/{team}/{channel}?token=replace-with-long-random-token'
 ```
 
 Templated webhook endpoint:
@@ -216,7 +216,7 @@ Public server:
 | --- | --- | --- |
 | `GET` | `/` | Basic service check. |
 | `POST` | `/api/messages` | Bot Framework messaging endpoint. |
-| `POST` | `/webhook/fwd/{team}/{channel}?token=...` | Forward payload to channel. |
+| `POST` | `/webhook/raw/{team}/{channel}?token=...` | Forward payload to channel. |
 | `POST` | `/webhook/{keyword}/{team}/{channel}?token=...` | Render template, then forward. |
 
 Internal server:
@@ -226,7 +226,7 @@ Internal server:
 | `GET` | `/healthz` | Health/config check. |
 | `GET` | `/metrics` | Prometheus-style metrics. |
 | `GET` | `/webhooks` | List teams/channels and generated webhook URLs. |
-| `POST` | `/webhook/fwd/{team}/{channel}` | Forward payload to channel. |
+| `POST` | `/webhook/raw/{team}/{channel}` | Forward payload to channel. |
 | `POST` | `/webhook/{keyword}/{team}/{channel}` | Render template, then forward. |
 
 Public webhook endpoints require `?token=...` where token is listed in `WEBHOOK_TOKENS`.
