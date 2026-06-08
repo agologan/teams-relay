@@ -92,21 +92,21 @@ Teams Relay reads process environment. Scripts use Node `--env-file-if-exists=.e
 
 ### Environment variables
 
-| Variable | Default | Description |
-| --- | --- | --- |
-| `BOT_APP_TYPE` | `SingleTenant` | Bot Framework app type: `SingleTenant`, `MultiTenant`, or `UserAssignedMSI`. |
-| `BOT_APP_ID` / `CLIENT_ID` | required | Microsoft app/client id. |
-| `BOT_APP_PASSWORD` / `CLIENT_SECRET` | required | Microsoft app secret. |
-| `BOT_TENANT_ID` / `TENANT_ID` | required | Microsoft tenant id. |
-| `PORT` | `3000` | Public HTTP port. Exposes `/api/messages`. |
-| `INTERNAL_PORT` | `3001` | Internal HTTP port for health, metrics, and webhook forwarding. Keep private. |
-| `STORAGE_BACKEND` | `dynamodb` | `dynamodb` or `sqlite`. |
-| `SQLITE_FILENAME` | `teams-relay.sqlite` | SQLite database path when using SQLite. |
-| `DYNAMODB_ENDPOINT` | `http://localhost:8000` | DynamoDB endpoint. Use AWS endpoint or DynamoDB Local. |
-| `DYNAMODB_REGION` | `us-east-1` | DynamoDB region. |
-| `DYNAMODB_TABLE` | `teams-relay` | DynamoDB table name. |
-| `WEBHOOK_TOKENS` | empty | Comma-separated valid tokens for public webhook URLs. Public webhook endpoints require `?token=...`. |
-| `INTERNAL_WEBHOOK_AUTH_ENABLED` | `false` | Require same token auth on internal webhook endpoints. |
+| Variable                             | Default                 | Description                                                                                          |
+| ------------------------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------- |
+| `BOT_APP_TYPE`                       | `SingleTenant`          | Bot Framework app type: `SingleTenant`, `MultiTenant`, or `UserAssignedMSI`.                         |
+| `BOT_APP_ID` / `CLIENT_ID`           | required                | Microsoft app/client id.                                                                             |
+| `BOT_APP_PASSWORD` / `CLIENT_SECRET` | required                | Microsoft app secret.                                                                                |
+| `BOT_TENANT_ID` / `TENANT_ID`        | required                | Microsoft tenant id.                                                                                 |
+| `PORT`                               | `3000`                  | Public HTTP port. Exposes `/api/messages`.                                                           |
+| `INTERNAL_PORT`                      | `3001`                  | Internal HTTP port for health, metrics, and webhook forwarding. Keep private.                        |
+| `STORAGE_BACKEND`                    | `dynamodb`              | `dynamodb` or `sqlite`.                                                                              |
+| `SQLITE_FILENAME`                    | `teams-relay.sqlite`    | SQLite database path when using SQLite.                                                              |
+| `DYNAMODB_ENDPOINT`                  | `http://localhost:8000` | DynamoDB endpoint. Use AWS endpoint or DynamoDB Local.                                               |
+| `DYNAMODB_REGION`                    | `us-east-1`             | DynamoDB region.                                                                                     |
+| `DYNAMODB_TABLE`                     | `teams-relay`           | DynamoDB table name.                                                                                 |
+| `WEBHOOK_TOKENS`                     | empty                   | Comma-separated valid tokens for public webhook URLs. Public webhook endpoints require `?token=...`. |
+| `INTERNAL_WEBHOOK_AUTH_ENABLED`      | `false`                 | Require same token auth on internal webhook endpoints.                                               |
 
 ## Run with Docker
 
@@ -212,22 +212,22 @@ For AWS-hosted DynamoDB, omit local endpoint or set it to your desired endpoint.
 
 Public server:
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/` | Basic service check. |
-| `POST` | `/api/messages` | Bot Framework messaging endpoint. |
-| `POST` | `/webhook/raw/{team}/{channel}?token=...` | Forward payload to channel. |
-| `POST` | `/webhook/{keyword}/{team}/{channel}?token=...` | Render template, then forward. |
+| Method | Path                                            | Purpose                           |
+| ------ | ----------------------------------------------- | --------------------------------- |
+| `GET`  | `/`                                             | Basic service check.              |
+| `POST` | `/api/messages`                                 | Bot Framework messaging endpoint. |
+| `POST` | `/webhook/raw/{team}/{channel}?token=...`       | Forward payload to channel.       |
+| `POST` | `/webhook/{keyword}/{team}/{channel}?token=...` | Render template, then forward.    |
 
 Internal server:
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/healthz` | Health/config check. |
-| `GET` | `/metrics` | Prometheus-style metrics. |
-| `GET` | `/webhooks` | List teams/channels and generated webhook URLs. |
-| `POST` | `/webhook/raw/{team}/{channel}` | Forward payload to channel. |
-| `POST` | `/webhook/{keyword}/{team}/{channel}` | Render template, then forward. |
+| Method | Path                                  | Purpose                                         |
+| ------ | ------------------------------------- | ----------------------------------------------- |
+| `GET`  | `/healthz`                            | Health/config check.                            |
+| `GET`  | `/metrics`                            | Prometheus-style metrics.                       |
+| `GET`  | `/webhooks`                           | List teams/channels and generated webhook URLs. |
+| `POST` | `/webhook/raw/{team}/{channel}`       | Forward payload to channel.                     |
+| `POST` | `/webhook/{keyword}/{team}/{channel}` | Render template, then forward.                  |
 
 Public webhook endpoints require `?token=...` where token is listed in `WEBHOOK_TOKENS`.
 

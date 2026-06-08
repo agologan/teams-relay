@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from "zod";
 
 const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(3000),
@@ -9,35 +9,35 @@ const envSchema = z.object({
   CLIENT_SECRET: z.string().optional(),
   BOT_TENANT_ID: z.string().optional(),
   TENANT_ID: z.string().optional(),
-  BOT_APP_TYPE: z.enum(['SingleTenant', 'MultiTenant', 'UserAssignedMSI']).default('SingleTenant'),
-  STORAGE_BACKEND: z.enum(['dynamodb', 'sqlite']).default('dynamodb'),
+  BOT_APP_TYPE: z.enum(["SingleTenant", "MultiTenant", "UserAssignedMSI"]).default("SingleTenant"),
+  STORAGE_BACKEND: z.enum(["dynamodb", "sqlite"]).default("dynamodb"),
   DYNAMODB_ENDPOINT: z.string().optional(),
-  DYNAMODB_REGION: z.string().default('us-east-1'),
-  DYNAMODB_TABLE: z.string().default('teams-relay'),
-  SQLITE_FILENAME: z.string().default('teams-relay.sqlite'),
-  WEBHOOK_TOKENS: z.string().default(''),
+  DYNAMODB_REGION: z.string().default("us-east-1"),
+  DYNAMODB_TABLE: z.string().default("teams-relay"),
+  SQLITE_FILENAME: z.string().default("teams-relay.sqlite"),
+  WEBHOOK_TOKENS: z.string().default(""),
   INTERNAL_WEBHOOK_AUTH_ENABLED: z.stringbool().default(false),
-})
+});
 
-const rawEnv = envSchema.parse(process.env)
+const rawEnv = envSchema.parse(process.env);
 
-const botAppId = rawEnv.BOT_APP_ID ?? rawEnv.CLIENT_ID
-const botAppPassword = rawEnv.BOT_APP_PASSWORD ?? rawEnv.CLIENT_SECRET
-const botTenantId = rawEnv.BOT_TENANT_ID ?? rawEnv.TENANT_ID
-const webhookTokens = rawEnv.WEBHOOK_TOKENS.split(',')
+const botAppId = rawEnv.BOT_APP_ID ?? rawEnv.CLIENT_ID;
+const botAppPassword = rawEnv.BOT_APP_PASSWORD ?? rawEnv.CLIENT_SECRET;
+const botTenantId = rawEnv.BOT_TENANT_ID ?? rawEnv.TENANT_ID;
+const webhookTokens = rawEnv.WEBHOOK_TOKENS.split(",")
   .map((token) => token.trim())
-  .filter(Boolean)
+  .filter(Boolean);
 
 if (!botAppId) {
-  throw new Error('Missing BOT_APP_ID or CLIENT_ID')
+  throw new Error("Missing BOT_APP_ID or CLIENT_ID");
 }
 
 if (!botAppPassword) {
-  throw new Error('Missing BOT_APP_PASSWORD or CLIENT_SECRET')
+  throw new Error("Missing BOT_APP_PASSWORD or CLIENT_SECRET");
 }
 
 if (!botTenantId) {
-  throw new Error('Missing BOT_TENANT_ID or TENANT_ID')
+  throw new Error("Missing BOT_TENANT_ID or TENANT_ID");
 }
 
 export const config = {
@@ -60,4 +60,4 @@ export const config = {
     tokens: webhookTokens,
     internalAuthEnabled: rawEnv.INTERNAL_WEBHOOK_AUTH_ENABLED,
   },
-} as const
+} as const;

@@ -3,7 +3,12 @@
   "manifestVersion": "1.16",
   "version": "1.0.0",
   "id": "00000000-0000-0000-0000-000000000000",
-  "developer": { "name": "Teams Relay contributors", "websiteUrl": "https://example.com", "privacyUrl": "https://example.com/privacy", "termsOfUseUrl": "https://example.com/terms-of-use" },
+  "developer": {
+    "name": "Teams Relay contributors",
+    "websiteUrl": "https://example.com",
+    "privacyUrl": "https://example.com/privacy",
+    "termsOfUseUrl": "https://example.com/terms-of-use"
+  },
   "name": { "short": "Relay", "full": "Teams Relay" },
   "description": { "short": "Sends notifications", "full": "Service account notifications" },
   "icons": { "color": "color.png", "outline": "outline.png" },

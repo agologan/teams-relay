@@ -1,88 +1,92 @@
-import fs from 'node:fs/promises'
-import path from 'node:path'
+import fs from "node:fs/promises";
+import path from "node:path";
 
-import Handlebars from 'handlebars'
+import Handlebars from "handlebars";
 
-const templatesDir = path.resolve(process.cwd(), 'templates')
+const templatesDir = path.resolve(process.cwd(), "templates");
 
 const isScalar = (value: unknown) =>
-  value == null || ['string', 'number', 'boolean'].includes(typeof value)
+  value == null || ["string", "number", "boolean"].includes(typeof value);
 
 const stringifyValue = (value: unknown) => {
   if (value == null) {
-    return ''
+    return "";
   }
 
   if (isScalar(value)) {
-    return String(value)
+    return String(value);
   }
 
-  return JSON.stringify(value)
-}
+  return JSON.stringify(value);
+};
 
-Handlebars.registerHelper('default', (value: unknown, fallback: unknown) => {
-  if (value == null || value === '') {
-    return fallback
+Handlebars.registerHelper("default", (value: unknown, fallback: unknown) => {
+  if (value == null || value === "") {
+    return fallback;
   }
 
-  return value
-})
+  return value;
+});
 
-Handlebars.registerHelper('escapeJson', (value: unknown) => {
-  const encoded = JSON.stringify(stringifyValue(value))
-  return new Handlebars.SafeString(encoded.slice(1, -1))
-})
+Handlebars.registerHelper("escapeJson", (value: unknown) => {
+  const encoded = JSON.stringify(stringifyValue(value));
+  return new Handlebars.SafeString(encoded.slice(1, -1));
+});
 
-Handlebars.registerHelper('eq', (left: unknown, right: unknown) => left === right)
+Handlebars.registerHelper("eq", (left: unknown, right: unknown) => left === right);
 
-Handlebars.registerHelper('and', (...values: unknown[]) => values.slice(0, -1).every(Boolean))
+Handlebars.registerHelper("and", (...values: unknown[]) => values.slice(0, -1).every(Boolean));
 
-Handlebars.registerHelper('or', (...values: unknown[]) => values.slice(0, -1).some(Boolean))
+Handlebars.registerHelper("or", (...values: unknown[]) => values.slice(0, -1).some(Boolean));
 
-Handlebars.registerHelper('not', (value: unknown) => !value)
+Handlebars.registerHelper("not", (value: unknown) => !value);
 
-Handlebars.registerHelper('when', (condition: unknown, truthy: unknown, falsy: unknown) => condition ? truthy : falsy)
+Handlebars.registerHelper("when", (condition: unknown, truthy: unknown, falsy: unknown) =>
+  condition ? truthy : falsy,
+);
 
-Handlebars.registerHelper('concat', (...values: unknown[]) => values.slice(0, -1).map(stringifyValue).join(''))
+Handlebars.registerHelper("concat", (...values: unknown[]) =>
+  values.slice(0, -1).map(stringifyValue).join(""),
+);
 
-Handlebars.registerHelper('object', (options: Handlebars.HelperOptions) => options.hash)
+Handlebars.registerHelper("object", (options: Handlebars.HelperOptions) => options.hash);
 
-Handlebars.registerHelper('title', (value: unknown) => {
-  const text = stringifyValue(value)
-  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}` : ''
-})
+Handlebars.registerHelper("title", (value: unknown) => {
+  const text = stringifyValue(value);
+  return text ? `${text.charAt(0).toUpperCase()}${text.slice(1)}` : "";
+});
 
-Handlebars.registerHelper('omit', (value: unknown, ...args: unknown[]) => {
-  const keys = args.slice(0, -1).map(String)
-  const source = (value ?? {}) as Record<string, unknown>
+Handlebars.registerHelper("omit", (value: unknown, ...args: unknown[]) => {
+  const keys = args.slice(0, -1).map(String);
+  const source = (value ?? {}) as Record<string, unknown>;
 
-  return Object.fromEntries(Object.entries(source).filter(([key]) => !keys.includes(key)))
-})
+  return Object.fromEntries(Object.entries(source).filter(([key]) => !keys.includes(key)));
+});
 
 export const renderWebhookTemplate = async (keyword: string, payload: Record<string, unknown>) => {
-  const safeKeyword = keyword.replace(/[^a-zA-Z0-9_-]/g, '')
+  const safeKeyword = keyword.replace(/[^a-zA-Z0-9_-]/g, "");
 
   if (!safeKeyword) {
-    throw new Error('Invalid webhook template keyword')
+    throw new Error("Invalid webhook template keyword");
   }
 
-  const templatePath = path.join(templatesDir, `${safeKeyword}.json`)
-  const defaultTemplatePath = path.join(templatesDir, 'default.json')
-  let templateSource: string
+  const templatePath = path.join(templatesDir, `${safeKeyword}.json`);
+  const defaultTemplatePath = path.join(templatesDir, "default.json");
+  let templateSource: string;
 
   try {
-    templateSource = await fs.readFile(templatePath, 'utf8')
+    templateSource = await fs.readFile(templatePath, "utf8");
   } catch (error) {
-    const isMissing = error instanceof Error && 'code' in error && error.code === 'ENOENT'
+    const isMissing = error instanceof Error && "code" in error && error.code === "ENOENT";
 
-    if (!isMissing || safeKeyword === 'default') {
-      throw error
+    if (!isMissing || safeKeyword === "default") {
+      throw error;
     }
 
-    templateSource = await fs.readFile(defaultTemplatePath, 'utf8')
+    templateSource = await fs.readFile(defaultTemplatePath, "utf8");
   }
-  const template = Handlebars.compile(templateSource, { noEscape: true })
-  const rendered = template(payload)
+  const template = Handlebars.compile(templateSource, { noEscape: true });
+  const rendered = template(payload);
 
-  return JSON.parse(rendered) as Record<string, unknown>
-}
+  return JSON.parse(rendered) as Record<string, unknown>;
+};

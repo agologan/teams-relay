@@ -2,19 +2,20 @@
   "name": "teams-relay",
   "version": "1.0.0",
   "description": "Teams bot service replacing legacy webhooks",
+  "license": "Apache-2.0",
+  "author": "",
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "node --env-file-if-exists=.env --import tsx --watch src/server.ts",
     "start": "node --env-file-if-exists=.env dist/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
+    "fmt": "oxfmt",
     "dynamodb:create-table": "node --env-file-if-exists=.env --import tsx src/scripts/create-table.ts",
     "manifest": "zip -j manifest.zip manifest/*",
     "manifest:validate": "node scripts/validate-manifest.mjs",
     "test": "echo \"No tests yet\""
   },
-  "author": "",
-  "license": "Apache-2.0",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1052.0",
     "@aws-sdk/lib-dynamodb": "^3.1052.0",
@@ -27,6 +28,7 @@
   "devDependencies": {
     "@types/node": "^25.9.1",
     "ajv-draft-04": "^1.0.0",
+    "oxfmt": "^0.53.0",
     "tsx": "^4.22.3",
     "typescript": "^6.0.3"
   },
