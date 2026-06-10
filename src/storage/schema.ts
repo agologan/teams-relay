@@ -1,4 +1,4 @@
-export type ChannelStatus = "active" | "deleted";
+export type ChannelStatus = "active" | "archived" | "deleted";
 
 export type InstallationRecord = {
   tenantId: string;

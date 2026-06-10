@@ -1,6 +1,13 @@
-import { TeamsActivityHandler, TeamsInfo, TurnContext, type ChannelInfo } from "botbuilder";
+import {
+  TeamsActivityHandler,
+  TeamsInfo,
+  TurnContext,
+  type ChannelInfo,
+  type TeamsChannelData,
+} from "botbuilder";
 
 import { storage } from "../storage";
+import type { ChannelStatus } from "../storage/schema";
 import { getTeamsContextSnapshot, isBotAddedEvent } from "./events";
 
 const requireValue = <T>(value: T | null | undefined, message: string): T => {
@@ -62,6 +69,11 @@ export class TeamsRelayBot extends TeamsActivityHandler {
       await this.upsertChannelFromEvent(context, channelInfo, "deleted");
       await next();
     });
+
+    this.onTeamsChannelRestoredEvent(async (channelInfo, _teamInfo, context, next) => {
+      await this.upsertChannelFromEvent(context, channelInfo, "active");
+      await next();
+    });
   }
 
   private async handleInstall(context: TurnContext): Promise<void> {
@@ -96,10 +108,28 @@ export class TeamsRelayBot extends TeamsActivityHandler {
     });
   }
 
+  protected override async dispatchConversationUpdateActivity(context: TurnContext): Promise<void> {
+    const channelData = context.activity.channelData as TeamsChannelData | undefined;
+
+    if (context.activity.channelId === "msteams" && channelData?.eventType) {
+      if (channelData.eventType === "channelArchived" && channelData.channel) {
+        await this.upsertChannelFromEvent(context, channelData.channel, "archived");
+        return;
+      }
+
+      if (channelData.eventType === "channelUnarchived" && channelData.channel) {
+        await this.upsertChannelFromEvent(context, channelData.channel, "active");
+        return;
+      }
+    }
+
+    await super.dispatchConversationUpdateActivity(context);
+  }
+
   private async upsertChannelFromEvent(
     context: TurnContext,
     channelInfo: ChannelInfo,
-    status: "active" | "deleted",
+    status: ChannelStatus,
   ): Promise<void> {
     const snapshot = getTeamsContextSnapshot(context);
 
