@@ -88,7 +88,23 @@ const encodeWebhookPathPart = (value: string) => encodeURIComponent(value);
 
 const makeTokenQuery = (token: string) => `?token=${encodeURIComponent(token)}`;
 
-const getWebhookToken = (c: Context) => c.req.query("token")?.trim();
+const getBearerToken = (c: Context) => {
+  const authHeader = c.req.header("authorization")?.trim();
+
+  if (!authHeader) {
+    return undefined;
+  }
+
+  const [scheme, ...tokenParts] = authHeader.split(/\s+/);
+
+  if (scheme.toLowerCase() !== "bearer" || tokenParts.length !== 1) {
+    return undefined;
+  }
+
+  return tokenParts[0]?.trim() || undefined;
+};
+
+const getWebhookToken = (c: Context) => c.req.query("token")?.trim() || getBearerToken(c);
 
 const hasValidWebhookToken = (c: Context) => {
   const token = getWebhookToken(c);
