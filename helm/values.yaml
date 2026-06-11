@@ -46,6 +46,14 @@ service:
   port: 3000
   internalPort: 3001
 
+serviceMonitor:
+  enabled: false
+  interval: 30s
+  path: /metrics
+  relabelings: []
+  metricRelabelings: []
+  scheme: http
+
 ingress:
   enabled: false
   # className: ""

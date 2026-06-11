@@ -1,0 +1,27 @@
+{{- with .Values.serviceMonitor }}
+{{- if and ($.Capabilities.APIVersions.Has "monitoring.coreos.com/v1/ServiceMonitor") .enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "teams-relay.fullname" $ }}
+  labels:
+    {{- include "teams-relay.labels" $ | nindent 4 }}
+spec:
+  endpoints:
+  - port: internal
+    path: {{ .path }}
+    interval: {{ .interval }}
+    {{- with .relabelings }}
+    relabelings:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+    {{- with .metricRelabelings }}
+    metricRelabelings:
+      {{- toYaml . | nindent 8 }}
+    {{- end }}
+    scheme: {{ .scheme }}
+  selector:
+    matchLabels:
+      {{- include "teams-relay.selectorLabels" $ | nindent 6 }}
+{{- end }}
+{{- end }}
