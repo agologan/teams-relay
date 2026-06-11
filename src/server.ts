@@ -143,7 +143,7 @@ const buildWebhooksResponse = async (c: Context, publicEndpoint: boolean) => {
           channelName: channel.channelName,
           status: channel.status,
           updatedAt: channel.updatedAt,
-          webhookUrl: `${origin}/webhook/fwd/${teamPath}/${channelPath}${tokenSuffix}`,
+          webhookUrl: `${origin}/webhook/raw/${teamPath}/${channelPath}${tokenSuffix}`,
           templatedWebhookUrl: `${origin}/webhook/{keyword}/${teamPath}/${channelPath}${tokenSuffix}`,
         };
       }),
