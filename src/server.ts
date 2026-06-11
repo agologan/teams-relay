@@ -144,7 +144,7 @@ const buildWebhooksResponse = async (c: Context, publicEndpoint: boolean) => {
           status: channel.status,
           updatedAt: channel.updatedAt,
           webhookUrl: `${origin}/webhook/raw/${teamPath}/${channelPath}${tokenSuffix}`,
-          templatedWebhookUrl: `${origin}/webhook/{keyword}/${teamPath}/${channelPath}${tokenSuffix}`,
+          templatedWebhookUrl: `${origin}/webhook/{template}/${teamPath}/${channelPath}${tokenSuffix}`,
         };
       }),
     })),
@@ -167,7 +167,7 @@ const forwardWebhook = async (
   teamId: string,
   channelId: string,
   payload: Record<string, unknown>,
-  templateKeyword?: string,
+  templateName?: string,
 ) => {
   const channel = await storage.knownTeams.getChannel(teamId, channelId);
 
@@ -179,8 +179,8 @@ const forwardWebhook = async (
   }
 
   try {
-    const renderedPayload = templateKeyword
-      ? await renderWebhookTemplate(templateKeyword, payload)
+    const renderedPayload = templateName
+      ? await renderWebhookTemplate(templateName, payload)
       : payload;
     const activity = buildActivityFromWebhookPayload(renderedPayload);
     const sent = await sendToTeamsChannel(
@@ -200,7 +200,7 @@ const forwardWebhook = async (
         teamId,
         channelId,
         channelName: channel.channelName,
-        template: templateKeyword ?? null,
+        template: templateName ?? null,
         ...sent,
       },
     };
@@ -209,7 +209,7 @@ const forwardWebhook = async (
     console.error("[internal] webhook forward failed", {
       teamId,
       channelId,
-      templateKeyword,
+      templateName,
       error,
     });
     return {
@@ -240,7 +240,7 @@ const registerWebhookRoutes = (targetApp: Hono, publicEndpoint: boolean) => {
     return c.json(result.body);
   });
 
-  targetApp.post("/webhook/:keyword/:team/:channel", async (c) => {
+  targetApp.post("/webhook/:templateName/:team/:channel", async (c) => {
     if (webhookAuthRequired(publicEndpoint)) {
       const authError = requireWebhookToken(c);
 
@@ -249,13 +249,13 @@ const registerWebhookRoutes = (targetApp: Hono, publicEndpoint: boolean) => {
       }
     }
 
-    const keyword = c.req.param("keyword");
+    const templateName = c.req.param("templateName");
     const payload = await c.req.json<Record<string, unknown>>();
     const result = await forwardWebhook(
       decodeURIComponent(c.req.param("team")),
       decodeURIComponent(c.req.param("channel")),
       payload,
-      keyword,
+      templateName,
     );
 
     c.status(result.status as 200 | 404 | 500);
@@ -307,7 +307,7 @@ server.listen(config.port, () => {
     `[server] public webhook endpoint http://localhost:${config.port}/webhook/raw/{team}/{channel}?token={token}`,
   );
   console.log(
-    `[server] public templated webhook endpoint http://localhost:${config.port}/webhook/{keyword}/{team}/{channel}?token={token}`,
+      `[server] public templated webhook endpoint http://localhost:${config.port}/webhook/{template}/{team}/{channel}?token={token}`,
   );
 });
 
@@ -320,6 +320,6 @@ internalServer.listen(config.internalPort, () => {
     `[internal] webhook endpoint http://localhost:${config.internalPort}/webhook/raw/{team}/{channel}`,
   );
   console.log(
-    `[internal] templated webhook endpoint http://localhost:${config.internalPort}/webhook/{keyword}/{team}/{channel}`,
+      `[internal] templated webhook endpoint http://localhost:${config.internalPort}/webhook/{template}/{team}/{channel}`,
   );
 });

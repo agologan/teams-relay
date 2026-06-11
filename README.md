@@ -173,7 +173,7 @@ curl -X POST \
 Templated webhook endpoint:
 
 ```text
-POST /webhook/{keyword}/{team}/{channel}?token=replace-with-long-random-token
+POST /webhook/{template}/{team}/{channel}?token=replace-with-long-random-token
 ```
 
 Templates live in:
@@ -217,7 +217,7 @@ Public server:
 | `GET`  | `/`                                             | Basic service check.              |
 | `POST` | `/api/messages`                                 | Bot Framework messaging endpoint. |
 | `POST` | `/webhook/raw/{team}/{channel}?token=...`       | Forward payload to channel.       |
-| `POST` | `/webhook/{keyword}/{team}/{channel}?token=...` | Render template, then forward.    |
+| `POST` | `/webhook/{template}/{team}/{channel}?token=...` | Render template, then forward.    |
 
 Internal server:
 
@@ -227,7 +227,7 @@ Internal server:
 | `GET`  | `/metrics`                            | Prometheus-style metrics.                       |
 | `GET`  | `/webhooks`                           | List teams/channels and generated webhook URLs. |
 | `POST` | `/webhook/raw/{team}/{channel}`       | Forward payload to channel.                     |
-| `POST` | `/webhook/{keyword}/{team}/{channel}` | Render template, then forward.                  |
+| `POST` | `/webhook/{template}/{team}/{channel}` | Render template, then forward.                  |
 
 Public webhook endpoints require `?token=...` where token is listed in `WEBHOOK_TOKENS`.
 

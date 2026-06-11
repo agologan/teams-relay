@@ -63,14 +63,14 @@ Handlebars.registerHelper("omit", (value: unknown, ...args: unknown[]) => {
   return Object.fromEntries(Object.entries(source).filter(([key]) => !keys.includes(key)));
 });
 
-export const renderWebhookTemplate = async (keyword: string, payload: Record<string, unknown>) => {
-  const safeKeyword = keyword.replace(/[^a-zA-Z0-9_-]/g, "");
+export const renderWebhookTemplate = async (templateName: string, payload: Record<string, unknown>) => {
+  const safeTemplateName = templateName.replace(/[^a-zA-Z0-9_-]/g, "");
 
-  if (!safeKeyword) {
-    throw new Error("Invalid webhook template keyword");
+  if (!safeTemplateName) {
+    throw new Error("Invalid webhook template name");
   }
 
-  const templatePath = path.join(templatesDir, `${safeKeyword}.json`);
+  const templatePath = path.join(templatesDir, `${safeTemplateName}.json`);
   const defaultTemplatePath = path.join(templatesDir, "default.json");
   let templateSource: string;
 
@@ -79,7 +79,7 @@ export const renderWebhookTemplate = async (keyword: string, payload: Record<str
   } catch (error) {
     const isMissing = error instanceof Error && "code" in error && error.code === "ENOENT";
 
-    if (!isMissing || safeKeyword === "default") {
+    if (!isMissing || safeTemplateName === "default") {
       throw error;
     }
 
