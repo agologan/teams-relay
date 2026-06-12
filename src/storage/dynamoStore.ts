@@ -9,7 +9,7 @@ import {
   makeChannelSk,
   makeTeamPk,
 } from "./schema";
-import type { KnownTeamsResponse, TeamsRelayStore } from "./types";
+import type { KnownTeamsResponse, StorageAdapter } from "./types";
 
 type RawInstallationItem = {
   PK?: string;
@@ -51,7 +51,7 @@ const makeTeamKey = (tenantId: string, teamId: string) => `${tenantId}:${teamId}
 const fallbackTeamName = (teamId: string) => `Unknown team (${teamId})`;
 const fallbackChannelName = (channelId: string) => `Unknown channel (${channelId})`;
 
-export class DynamoTeamsRelayStore implements TeamsRelayStore {
+export class DynamoTeamsRelayStore implements StorageAdapter {
   async upsertInstallation(record: InstallationRecord): Promise<void> {
     const now = new Date().toISOString();
 
@@ -130,12 +130,6 @@ export class DynamoTeamsRelayStore implements TeamsRelayStore {
 
   async markChannelDeleted(input: Omit<ChannelRecord, "status">): Promise<void> {
     await this.upsertChannel({ ...input, status: "deleted" });
-  }
-
-  async getTeam(teamId: string): Promise<KnownTeamsResponse["teams"][number] | null> {
-    const knownTeams = await this.listKnownTeams();
-
-    return knownTeams.teams.find((team) => team.teamId === teamId) ?? null;
   }
 
   private async getCachedInstallation(teamId: string): Promise<CachedInstallation | null> {

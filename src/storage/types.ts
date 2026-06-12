@@ -32,11 +32,10 @@ export type SendableChannel = {
   serviceUrl: string;
 };
 
-export type TeamsRelayStore = {
+export type StorageAdapter = {
   upsertInstallation(record: InstallationRecord): Promise<void>;
   upsertChannel(record: ChannelRecord): Promise<void>;
   markChannelDeleted(input: Omit<ChannelRecord, "status">): Promise<void>;
-  getTeam(teamId: string): Promise<KnownTeam | null>;
   getChannel(teamId: string, channelId: string): Promise<SendableChannel | null>;
   listKnownTeams(): Promise<KnownTeamsResponse>;
 };

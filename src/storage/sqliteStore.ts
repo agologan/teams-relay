@@ -2,7 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 
 import { config } from "../config";
 import type { ChannelRecord, InstallationRecord } from "./schema";
-import type { KnownTeamsResponse, TeamsRelayStore } from "./types";
+import type { KnownTeamsResponse, StorageAdapter } from "./types";
 
 type InstallationRow = {
   tenant_id: string;
@@ -23,7 +23,7 @@ type ChannelRow = {
 
 const fallbackTeamName = (teamId: string) => `Unknown team (${teamId})`;
 
-export class SqliteTeamsRelayStore implements TeamsRelayStore {
+export class SqliteTeamsRelayStore implements StorageAdapter {
   private readonly db: DatabaseSync;
 
   constructor(filename = config.sqlite.filename) {
@@ -95,12 +95,6 @@ export class SqliteTeamsRelayStore implements TeamsRelayStore {
 
   async markChannelDeleted(input: Omit<ChannelRecord, "status">): Promise<void> {
     await this.upsertChannel({ ...input, status: "deleted" });
-  }
-
-  async getTeam(teamId: string): Promise<KnownTeamsResponse["teams"][number] | null> {
-    const knownTeams = await this.listKnownTeams();
-
-    return knownTeams.teams.find((team) => team.teamId === teamId) ?? null;
   }
 
   async getChannel(teamId: string, channelId: string) {

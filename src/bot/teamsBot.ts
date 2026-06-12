@@ -6,7 +6,7 @@ import {
   type TeamsChannelData,
 } from "botbuilder";
 
-import { storage } from "../storage";
+import { storage } from "../storage/adapter";
 import type { ChannelStatus } from "../storage/schema";
 import { getTeamsContextSnapshot, isBotAddedEvent } from "./events";
 
@@ -81,7 +81,7 @@ export class TeamsRelayBot extends TeamsActivityHandler {
 
     const teamName = await getTeamName(context, snapshot.teamId);
 
-    await storage.installations.upsert({
+    await storage.upsertInstallation({
       tenantId: snapshot.tenantId,
       teamId: snapshot.teamId,
       teamName,
@@ -93,7 +93,7 @@ export class TeamsRelayBot extends TeamsActivityHandler {
     for (const channel of channels) {
       const channelId = requireValue(channel.id, "Teams channel missing id during install sync");
 
-      await storage.channels.upsert({
+      await storage.upsertChannel({
         tenantId: snapshot.tenantId,
         teamId: snapshot.teamId,
         channelId,
@@ -135,7 +135,7 @@ export class TeamsRelayBot extends TeamsActivityHandler {
 
     const channelId = requireValue(channelInfo.id, "Teams channel event missing id");
 
-    await storage.channels.upsert({
+    await storage.upsertChannel({
       tenantId: snapshot.tenantId,
       teamId: snapshot.teamId,
       channelId,

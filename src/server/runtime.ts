@@ -1,18 +1,18 @@
 import { sendToTeamsChannel } from "../bot/send";
 import { metrics } from "../metrics";
-import { store } from "../storage";
-import type { TeamsRelayStore } from "../storage/types";
+import { storage } from "../storage/adapter";
+import type { StorageAdapter } from "../storage/types";
 import { renderWebhookTemplate } from "../templates";
 
 export type ServerRuntimeDeps = {
-  storage: TeamsRelayStore;
+  storage: StorageAdapter;
   sendToTeamsChannel: typeof sendToTeamsChannel;
   renderWebhookTemplate: typeof renderWebhookTemplate;
   metrics: typeof metrics;
 };
 
 const defaultRuntimeDeps: ServerRuntimeDeps = {
-  storage: store,
+  storage,
   sendToTeamsChannel,
   renderWebhookTemplate,
   metrics,
