@@ -14,7 +14,7 @@
     "dynamodb:create-table": "node --env-file-if-exists=.env --import tsx src/scripts/create-table.ts",
     "manifest": "zip -j manifest.zip manifest/*",
     "manifest:validate": "node scripts/validate-manifest.mjs",
-    "test": "echo \"No tests yet\""
+    "test": "node --import tsx --test tests/*.test.js"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.1053.0",

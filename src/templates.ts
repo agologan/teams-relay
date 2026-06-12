@@ -63,7 +63,10 @@ Handlebars.registerHelper("omit", (value: unknown, ...args: unknown[]) => {
   return Object.fromEntries(Object.entries(source).filter(([key]) => !keys.includes(key)));
 });
 
-export const renderWebhookTemplate = async (templateName: string, payload: Record<string, unknown>) => {
+export const renderWebhookTemplate = async (
+  templateName: string,
+  payload: Record<string, unknown>,
+) => {
   const safeTemplateName = templateName.replace(/[^a-zA-Z0-9_-]/g, "");
 
   if (!safeTemplateName) {
