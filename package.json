@@ -17,8 +17,8 @@
     "test": "node --import tsx --test tests/*.test.js"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1053.0",
-    "@aws-sdk/lib-dynamodb": "^3.1053.0",
+    "@aws-sdk/client-dynamodb": "^3.1057.0",
+    "@aws-sdk/lib-dynamodb": "^3.1057.0",
     "@hono/node-server": "^2.0.4",
     "botbuilder": "^4.23.3",
     "handlebars": "^4.7.9",
@@ -30,7 +30,7 @@
     "@typescript/native-preview": "7.0.0-dev.20260607.1",
     "ajv-draft-04": "^1.0.0",
     "oxfmt": "^0.53.0",
-    "tsx": "^4.22.3"
+    "tsx": "^4.22.4"
   },
   "packageManager": "pnpm@11.5.2+sha512.71c631e382066efc25625d5cf029075de07b61b37f6e27350fbd84b1bda5864c8c1967adc280776b45c30a715c0359a3be08fef42d5bb09e2b99029979692916"
 }
