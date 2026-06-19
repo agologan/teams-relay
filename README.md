@@ -107,6 +107,10 @@ Teams Relay reads process environment. Scripts use Node `--env-file-if-exists=.e
 | `DYNAMODB_TABLE`                     | `teams-relay`           | DynamoDB table name.                                                                                 |
 | `WEBHOOK_TOKENS`                     | empty                   | Comma-separated valid tokens for public webhook URLs. Public webhook endpoints require `?token=...`. |
 | `INTERNAL_WEBHOOK_AUTH_ENABLED`      | `false`                 | Require same token auth on internal webhook endpoints.                                               |
+| `TEAMS_SEND_TARGET_RPS`              | `2`                     | Target Teams send rate per channel queue.                                                            |
+| `TEAMS_SEND_MAX_RETRIES`             | `5`                     | Max queued Teams send attempts before dropping message.                                              |
+| `TEAMS_SEND_BACKOFF_BASE_MS`         | `1000`                  | Initial retry backoff for Teams send retries.                                                        |
+| `TEAMS_SEND_BACKOFF_MAX_MS`          | `60000`                 | Max retry backoff for Teams send retries.                                                            |
 
 ## Run with Docker
 
@@ -161,6 +165,8 @@ curl http://localhost:3001/webhooks
 
 Use URL returned by internal `GET /webhooks`. Public webhook endpoints require `?token=...`.
 
+Webhook calls are accepted into an in-memory per-channel delivery queue and return `202 Accepted`. Delivery is best-effort: queued messages can be lost if the process restarts or crashes, and messages are dropped after retry exhaustion.
+
 Forward message:
 
 ```sh
@@ -212,21 +218,21 @@ For AWS-hosted DynamoDB, omit local endpoint or set it to your desired endpoint.
 
 Public server:
 
-| Method | Path                                            | Purpose                           |
-| ------ | ----------------------------------------------- | --------------------------------- |
-| `GET`  | `/`                                             | Basic service check.              |
-| `POST` | `/api/messages`                                 | Bot Framework messaging endpoint. |
-| `POST` | `/webhook/raw/{team}/{channel}?token=...`       | Forward payload to channel.       |
+| Method | Path                                             | Purpose                           |
+| ------ | ------------------------------------------------ | --------------------------------- |
+| `GET`  | `/`                                              | Basic service check.              |
+| `POST` | `/api/messages`                                  | Bot Framework messaging endpoint. |
+| `POST` | `/webhook/raw/{team}/{channel}?token=...`        | Forward payload to channel.       |
 | `POST` | `/webhook/{template}/{team}/{channel}?token=...` | Render template, then forward.    |
 
 Internal server:
 
-| Method | Path                                  | Purpose                                         |
-| ------ | ------------------------------------- | ----------------------------------------------- |
-| `GET`  | `/healthz`                            | Health/config check.                            |
-| `GET`  | `/metrics`                            | Prometheus-style metrics.                       |
-| `GET`  | `/webhooks`                           | List teams/channels and generated webhook URLs. |
-| `POST` | `/webhook/raw/{team}/{channel}`       | Forward payload to channel.                     |
+| Method | Path                                   | Purpose                                         |
+| ------ | -------------------------------------- | ----------------------------------------------- |
+| `GET`  | `/healthz`                             | Health/config check.                            |
+| `GET`  | `/metrics`                             | Prometheus-style metrics.                       |
+| `GET`  | `/webhooks`                            | List teams/channels and generated webhook URLs. |
+| `POST` | `/webhook/raw/{team}/{channel}`        | Forward payload to channel.                     |
 | `POST` | `/webhook/{template}/{team}/{channel}` | Render template, then forward.                  |
 
 Public webhook endpoints require `?token=...` where token is listed in `WEBHOOK_TOKENS`.

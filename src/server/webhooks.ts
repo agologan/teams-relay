@@ -92,25 +92,28 @@ const forwardWebhook = async (
       ? await deps.renderWebhookTemplate(templateName, payload)
       : payload;
     const activity = buildActivityFromWebhookPayload(renderedPayload);
-    const sent = await deps.sendToTeamsChannel(
+    const queued = deps.enqueueTeamsChannelSend(
       {
+        teamId,
         channelId: channel.channelId,
         serviceUrl: channel.serviceUrl,
       },
       activity,
     );
 
-    deps.metrics.recordMessageSend(true);
-
     return {
-      status: 200,
+      status: 202,
       body: {
         ok: true,
+        queued: true,
+        deliveryGuarantee:
+          "best-effort in-memory; messages can be lost on process restart or crash",
+        messageId: queued.id,
+        queueDepth: queued.queueDepth,
         teamId,
         channelId,
         channelName: channel.channelName,
         template: templateName ?? null,
-        ...sent,
       },
     };
   } catch (error) {
@@ -165,7 +168,7 @@ export const registerWebhookRoutes = (targetApp: Hono, publicEndpoint: boolean) 
       payload,
     );
 
-    c.status(result.status as 200 | 404 | 500);
+    c.status(result.status as 202 | 404 | 500);
     return c.json(result.body);
   });
 
@@ -185,7 +188,7 @@ export const registerWebhookRoutes = (targetApp: Hono, publicEndpoint: boolean) 
       templateName,
     );
 
-    c.status(result.status as 200 | 404 | 500);
+    c.status(result.status as 202 | 404 | 500);
     return c.json(result.body);
   });
 };

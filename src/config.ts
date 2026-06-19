@@ -17,6 +17,10 @@ const envSchema = z.object({
   SQLITE_FILENAME: z.string().default("teams-relay.sqlite"),
   WEBHOOK_TOKENS: z.string().default(""),
   INTERNAL_WEBHOOK_AUTH_ENABLED: z.stringbool().default(false),
+  TEAMS_SEND_TARGET_RPS: z.coerce.number().positive().default(2),
+  TEAMS_SEND_MAX_RETRIES: z.coerce.number().int().positive().default(5),
+  TEAMS_SEND_BACKOFF_BASE_MS: z.coerce.number().int().positive().default(1000),
+  TEAMS_SEND_BACKOFF_MAX_MS: z.coerce.number().int().positive().default(60000),
 });
 
 const rawEnv = envSchema.parse(process.env);
@@ -59,5 +63,11 @@ export const config = {
   webhooks: {
     tokens: webhookTokens,
     internalAuthEnabled: rawEnv.INTERNAL_WEBHOOK_AUTH_ENABLED,
+  },
+  teamsSend: {
+    targetRps: rawEnv.TEAMS_SEND_TARGET_RPS,
+    maxRetries: rawEnv.TEAMS_SEND_MAX_RETRIES,
+    backoffBaseMs: rawEnv.TEAMS_SEND_BACKOFF_BASE_MS,
+    backoffMaxMs: rawEnv.TEAMS_SEND_BACKOFF_MAX_MS,
   },
 } as const;

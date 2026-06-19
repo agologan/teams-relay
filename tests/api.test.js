@@ -46,6 +46,15 @@ const makeDeps = ({
 
       return { id: "sent-1" };
     },
+    enqueueTeamsChannelSend(target, activity) {
+      sent.push({ target, activity });
+
+      if (sendFails) {
+        throw new Error("send failed");
+      }
+
+      return { id: "queued-1", queueDepth: 1 };
+    },
     async renderWebhookTemplate(keyword, payload) {
       rendered.push({ keyword, payload });
       return templateRenderer(keyword, payload);
@@ -54,6 +63,12 @@ const makeDeps = ({
       recordMessageSend(success) {
         metricEvents.push(success);
       },
+      recordQueuedMessage() {},
+      recordQueuedMessageDelivered() {},
+      recordQueuedMessageRetry() {},
+      recordQueuedMessageDropped() {},
+      recordSendThrottled() {},
+      setSendQueueDepth() {},
       renderPrometheus() {
         return "teams_relay_messages_sent_total 0\n";
       },
@@ -131,17 +146,20 @@ test("public raw webhook accepts bearer token", async () => {
     headers: { authorization: "Bearer secret", "content-type": "application/json" },
   });
 
-  assert.equal(res.status, 200);
+  assert.equal(res.status, 202);
   assert.deepEqual(await res.json(), {
     ok: true,
+    queued: true,
+    deliveryGuarantee: "best-effort in-memory; messages can be lost on process restart or crash",
+    messageId: "queued-1",
+    queueDepth: 1,
     teamId: "team",
     channelId: "channel",
     channelName: "Alerts",
     template: null,
-    id: "sent-1",
   });
   assert.equal(deps.sent.length, 1);
-  assert.deepEqual(deps.metricEvents, [true]);
+  assert.deepEqual(deps.metricEvents, []);
 });
 
 test("public templated webhook renders named template through API", async () => {
@@ -163,7 +181,7 @@ test("public templated webhook renders named template through API", async () => 
     headers: { "content-type": "application/json" },
   });
 
-  assert.equal(res.status, 200);
+  assert.equal(res.status, 202);
   assert.equal((await res.json()).template, "alert");
   assert.deepEqual(deps.rendered, [
     {
@@ -199,7 +217,7 @@ test("public templated webhook falls back to default template through API", asyn
     headers: { "content-type": "application/json" },
   });
 
-  assert.equal(res.status, 200);
+  assert.equal(res.status, 202);
   assert.equal((await res.json()).template, "missing-template");
   assert.equal(deps.sent[0].activity.attachments[0].content.body[0].text, "Custom title");
   assert.deepEqual(deps.sent[0].activity.attachments[0].content.body[1].facts, [
@@ -225,7 +243,7 @@ test("webhook unknown channel returns 404", async () => {
   });
 });
 
-test("webhook send failure returns 500 and records failed metric", async () => {
+test("webhook enqueue failure returns 500 and records failed metric", async () => {
   const sendableChannels = new Map([["team:channel", makeSendableChannel()]]);
   const deps = makeDeps({ store: makeTestingStore({ sendableChannels }), sendFails: true });
 
@@ -302,5 +320,5 @@ test("internal webhook works without token when internal auth disabled", async (
     headers: { "content-type": "application/json" },
   });
 
-  assert.equal(res.status, 200);
+  assert.equal(res.status, 202);
 });
