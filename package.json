@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.0.0",
-    "@typescript/native-preview": "7.0.0-dev.20260607.1",
+    "@typescript/native-preview": "7.0.0-dev.20260615.1",
     "ajv-draft-04": "^1.0.0",
     "oxfmt": "^0.55.0",
     "tsx": "^4.22.4"
