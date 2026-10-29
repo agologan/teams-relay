@@ -16,7 +16,7 @@ importers:
         version: 3.1129.0(@aws-sdk/client-dynamodb@3.1129.0)
       '@hono/node-server':
         specifier: ^2.1.1
-        version: 2.1.1(hono@4.13.7)
+        version: 2.1.1(hono@4.13.11)
       botbuilder:
         specifier: ^4.23.3
         version: 4.23.3
@@ -25,7 +25,7 @@ importers:
         version: 4.7.9
       hono:
         specifier: ^4.13.7
-        version: 4.13.7
+        version: 4.13.11
       zod:
         specifier: ^4.6.1
         version: 4.6.1
@@ -875,8 +875,8 @@ packages:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
     engines: {node: '>= 0.4'}
 
-  hono@4.13.7:
-    resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
+  hono@4.13.11:
+    resolution: {integrity: sha512-/SMX/RQNJn7oNmFwH6DtwDqcrzZU2otm1FD6OJe2cWF6cfy/F8hq0XVBv7xW3FTJshRQwuBnXHDq2kNsdZnshg==}
     engines: {node: '>=16.9.0'}
 
   htmlparser2@9.1.0:
@@ -1466,9 +1466,9 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@hono/node-server@2.1.1(hono@4.13.7)':
+  '@hono/node-server@2.1.1(hono@4.13.11)':
     dependencies:
-      hono: 4.13.7
+      hono: 4.13.11
 
   '@oxfmt/binding-android-arm-eabi@0.67.0':
     optional: true
@@ -1959,7 +1959,7 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  hono@4.13.7: {}
+  hono@4.13.11: {}
 
   htmlparser2@9.1.0:
     dependencies:
