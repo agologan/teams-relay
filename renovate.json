@@ -1,6 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
+  "semanticCommits": "enabled",
   "packageRules": [
     {
       "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest", "rollback"],
@@ -9,6 +10,8 @@
   ],
   "vulnerabilityAlerts": {
     "enabled": true,
+    "automerge": true,
+    "automergeType": "branch",
     "labels": ["security"]
   }
 }
