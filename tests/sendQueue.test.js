@@ -61,6 +61,41 @@ test("enqueueTeamsChannelSend eventually delivers queued message", async () => {
   assert.deepEqual(delivered, [{ target, activity }]);
 });
 
+test("queue honors nested retry headers from Agents and Azure SDK errors", async () => {
+  const { HttpError } = await import("@microsoft/agents-hosting");
+  const config = { method: "post", url: "/v3/conversations" };
+  const cases = [
+    new HttpError(
+      "throttled",
+      {
+        status: 429,
+        statusText: "Too Many Requests",
+        headers: new Headers({ "retry-after-ms": "0" }),
+        config,
+      },
+      config,
+    ),
+    {
+      statusCode: 429,
+      response: { headers: { get: (name) => (name === "retry-after-ms" ? "0" : undefined) } },
+    },
+  ];
+
+  for (const [index, error] of cases.entries()) {
+    let attempts = 0;
+    setTeamsChannelSenderForTesting(async () => {
+      attempts++;
+      if (attempts === 1) throw error;
+      return { id: "sent" };
+    });
+    enqueueTeamsChannelSend(
+      { teamId: "team", channelId: `retry-${index}`, serviceUrl: "https://service.example" },
+      { type: "message", text: "hello" },
+    );
+    await waitUntil(() => attempts === 2, 500);
+  }
+});
+
 test("enqueueTeamsChannelSend delivers messages for two channels with per-channel FIFO order", async () => {
   const delivered = [];
   const channelOne = {

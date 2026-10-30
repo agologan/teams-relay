@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import type { Activity } from "botbuilder";
+import type { Activity } from "@microsoft/agents-activity";
 
 import { config } from "../config";
 import { metrics } from "../metrics";
@@ -72,6 +72,10 @@ const getHeaderValue = (headers: unknown, name: string) => {
 
   if (typeof headers === "object") {
     const record = headers as Record<string, unknown>;
+    if (typeof record.get === "function") {
+      const value: unknown = record.get(name);
+      return typeof value === "string" ? value : undefined;
+    }
     const value = record[name] ?? record[name.toLowerCase()];
 
     if (Array.isArray(value)) {
@@ -90,7 +94,14 @@ const getRetryAfterMs = (error: unknown) => {
   }
 
   const record = error as Record<string, unknown>;
-  const headers = record.headers ?? record.responseHeaders;
+  const response = record.response;
+  // Agents SDK and Azure SDK put HTTP headers on the nested response.
+  const headers =
+    record.headers ??
+    record.responseHeaders ??
+    (typeof response === "object" && response !== null
+      ? (response as Record<string, unknown>).headers
+      : undefined);
   const retryAfterMs = getHeaderValue(headers, "retry-after-ms");
 
   if (retryAfterMs) {

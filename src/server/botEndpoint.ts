@@ -1,15 +1,28 @@
+import type { Request, WebResponse } from "@microsoft/agents-hosting";
 import { getRequestListener } from "@hono/node-server";
 import type { Hono } from "hono";
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 
-import { adapter } from "../bot/adapter";
-import { bot } from "../bot/teamsBot";
+import { adapter, serviceUrlPolicy } from "../bot/adapter";
+import { agent } from "../bot/teamsBot";
+
+const MAX_BODY_BYTES = 1024 * 1024;
+
+class PayloadTooLargeError extends Error {}
 
 const readJsonBody = async (req: IncomingMessage): Promise<Record<string, unknown>> => {
   const chunks: Buffer[] = [];
+  let size = 0;
 
   for await (const chunk of req) {
-    chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    const buffer = typeof chunk === "string" ? Buffer.from(chunk) : chunk;
+    size += buffer.length;
+
+    if (size > MAX_BODY_BYTES) {
+      throw new PayloadTooLargeError("Request body too large");
+    }
+
+    chunks.push(buffer);
   }
 
   const rawBody = Buffer.concat(chunks).toString("utf8").trim();
@@ -21,37 +34,43 @@ const readJsonBody = async (req: IncomingMessage): Promise<Record<string, unknow
   return JSON.parse(rawBody) as Record<string, unknown>;
 };
 
-const createBotResponse = (res: ServerResponse) => ({
-  socket: res.socket,
-  end: (...args: unknown[]) => res.end(...(args as [])),
-  header: (name: string, value: unknown) => {
-    res.setHeader(name, value as string);
-    return res;
+const createBotResponse = (res: ServerResponse): WebResponse => ({
+  get headersSent() {
+    return res.headersSent;
   },
-  send: (body?: unknown) => {
+  get writableEnded() {
+    return res.writableEnded;
+  },
+  end() {
+    res.end();
+    return this;
+  },
+  setHeader(name, value) {
+    res.setHeader(name, value);
+    return this;
+  },
+  send(body) {
     if (body === undefined) {
-      return res;
+      return this;
     }
 
     if (typeof body === "string") {
       if (!res.hasHeader("content-type")) {
         res.setHeader("content-type", "text/plain; charset=utf-8");
       }
-
-      res.write(body);
-      return res;
+      res.end(body);
+      return this;
     }
 
     if (!res.hasHeader("content-type")) {
       res.setHeader("content-type", "application/json; charset=utf-8");
     }
-
-    res.write(JSON.stringify(body));
-    return res;
+    res.end(JSON.stringify(body));
+    return this;
   },
-  status: (code: number) => {
+  status(code) {
     res.statusCode = code;
-    return res;
+    return this;
   },
 });
 
@@ -61,20 +80,43 @@ export const createPublicServer = (app: Hono) => {
   return createServer(async (req, res) => {
     if (req.method === "POST" && req.url?.startsWith("/api/messages")) {
       try {
-        const body = await readJsonBody(req);
-        const botReq = {
+        // Authorize first so unauthenticated callers cannot make us buffer bodies.
+        const botReq: Request = {
           method: req.method,
           headers: req.headers,
-          body,
         };
         const botRes = createBotResponse(res);
+        let processing: Promise<void> | undefined;
 
-        await adapter.process(botReq, botRes, async (context) => bot.run(context));
+        await adapter.authorizeRequest(botReq, botRes, () => {
+          processing = (async () => {
+            botReq.body = await readJsonBody(req);
+            const serviceUrl = botReq.body?.serviceUrl;
+            // SDK only compares URL hosts, and accepts a missing serviceurl claim.
+            if (
+              botReq.body?.channelId !== "msteams" ||
+              typeof serviceUrl !== "string" ||
+              botReq.user?.serviceurl !== serviceUrl ||
+              !serviceUrlPolicy.isAllowed(serviceUrl)
+            ) {
+              res.statusCode = 401;
+              res.end();
+              return;
+            }
+            await adapter.process(botReq, botRes, (context) => agent.run(context));
+          })();
+        });
+        await processing;
       } catch (error) {
-        console.error("[server] bot endpoint failed", error);
+        const status =
+          error instanceof PayloadTooLargeError ? 413 : error instanceof SyntaxError ? 400 : 500;
+
+        if (status === 500) {
+          console.error("[server] bot endpoint failed", error);
+        }
 
         if (!res.headersSent) {
-          res.statusCode = 500;
+          res.statusCode = status;
           res.end();
         }
       }

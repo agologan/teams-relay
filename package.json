@@ -20,7 +20,9 @@
     "@aws-sdk/client-dynamodb": "^3.1129.0",
     "@aws-sdk/lib-dynamodb": "^3.1129.0",
     "@hono/node-server": "^2.1.1",
-    "botbuilder": "^4.23.3",
+    "@microsoft/agents-activity": "^1.9.1",
+    "@microsoft/agents-hosting": "^1.9.1",
+    "@microsoft/agents-hosting-extensions-msteams": "^1.9.1",
     "handlebars": "^4.7.9",
     "hono": "^4.13.7",
     "zod": "^4.6.1"

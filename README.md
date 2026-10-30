@@ -3,9 +3,14 @@
   <h1>Teams Relay</h1>
 </div>
 
+<p align="center">
+  <a href="https://github.com/agologan/teams-relay">github.com/agologan/teams-relay</a> ·
+  <a href="CHANGELOG.md">Changelog</a>
+</p>
+
 Teams Relay replaces legacy Microsoft Teams incoming webhooks with a bot-backed relay service.
 
-Incoming webhook payloads hit Teams Relay. Teams Relay sends messages into Teams channels through Microsoft Bot Framework.
+Incoming webhook payloads hit Teams Relay. Teams Relay sends messages into Teams channels through the Microsoft 365 Agents SDK.
 
 ## How it works
 
@@ -23,7 +28,7 @@ Incoming webhook payloads hit Teams Relay. Teams Relay sends messages into Teams
 - Docker for container deployment
 - Microsoft Teams tenant where custom apps can be installed
 - Azure Bot/App Registration credentials
-- HTTPS public URL for Bot Framework callbacks
+- HTTPS public URL for Agents SDK callbacks
 
 ## Create Microsoft bot credentials
 
@@ -92,12 +97,14 @@ Teams Relay reads process environment. Scripts use Node `--env-file-if-exists=.e
 
 ### Environment variables
 
+> `BOT_APP_TYPE` was removed. Teams Relay always uses client-secret auth against `BOT_TENANT_ID`. Multi-tenant bots are no longer supported. See the [changelog](CHANGELOG.md).
+
 | Variable                             | Default                 | Description                                                                                          |
 | ------------------------------------ | ----------------------- | ---------------------------------------------------------------------------------------------------- |
-| `BOT_APP_TYPE`                       | `SingleTenant`          | Bot Framework app type: `SingleTenant`, `MultiTenant`, or `UserAssignedMSI`.                         |
 | `BOT_APP_ID` / `CLIENT_ID`           | required                | Microsoft app/client id.                                                                             |
 | `BOT_APP_PASSWORD` / `CLIENT_SECRET` | required                | Microsoft app secret.                                                                                |
 | `BOT_TENANT_ID` / `TENANT_ID`        | required                | Microsoft tenant id.                                                                                 |
+| `BOT_SERVICE_URL_HOSTS`              | empty                   | Additional comma-separated service URL hosts or domain suffixes.                                     |
 | `PORT`                               | `3000`                  | Public HTTP port. Exposes `/api/messages`.                                                           |
 | `INTERNAL_PORT`                      | `3001`                  | Internal HTTP port for health, metrics, and webhook forwarding. Keep private.                        |
 | `STORAGE_BACKEND`                    | `dynamodb`              | `dynamodb` or `sqlite`.                                                                              |
@@ -111,6 +118,8 @@ Teams Relay reads process environment. Scripts use Node `--env-file-if-exists=.e
 | `TEAMS_SEND_MAX_RETRIES`             | `5`                     | Max queued Teams send attempts before dropping message.                                              |
 | `TEAMS_SEND_BACKOFF_BASE_MS`         | `1000`                  | Initial retry backoff for Teams send retries.                                                        |
 | `TEAMS_SEND_BACKOFF_MAX_MS`          | `60000`                 | Max retry backoff for Teams send retries.                                                            |
+
+Teams service URLs must use HTTPS and match `smba.trafficmanager.net`, `botframework.com`, or an additional `BOT_SERVICE_URL_HOSTS` suffix. `/api/messages` is configured for the public Bot Framework cloud only, and requires the signed service URL to match the activity.
 
 ## Run with Docker
 
@@ -130,7 +139,6 @@ docker run --rm \
 Use `.env` similar to:
 
 ```env
-BOT_APP_TYPE=SingleTenant
 BOT_TENANT_ID=your-tenant-id
 BOT_APP_ID=your-app-id
 BOT_APP_PASSWORD=your-client-secret
@@ -218,12 +226,12 @@ For AWS-hosted DynamoDB, omit local endpoint or set it to your desired endpoint.
 
 Public server:
 
-| Method | Path                                             | Purpose                           |
-| ------ | ------------------------------------------------ | --------------------------------- |
-| `GET`  | `/`                                              | Basic service check.              |
-| `POST` | `/api/messages`                                  | Bot Framework messaging endpoint. |
-| `POST` | `/webhook/raw/{team}/{channel}?token=...`        | Forward payload to channel.       |
-| `POST` | `/webhook/{template}/{team}/{channel}?token=...` | Render template, then forward.    |
+| Method | Path                                             | Purpose                        |
+| ------ | ------------------------------------------------ | ------------------------------ |
+| `GET`  | `/`                                              | Basic service check.           |
+| `POST` | `/api/messages`                                  | Agents SDK messaging endpoint. |
+| `POST` | `/webhook/raw/{team}/{channel}?token=...`        | Forward payload to channel.    |
+| `POST` | `/webhook/{template}/{team}/{channel}?token=...` | Render template, then forward. |
 
 Internal server:
 

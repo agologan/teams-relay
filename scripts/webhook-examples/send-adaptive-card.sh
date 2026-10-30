@@ -37,7 +37,7 @@ curl -fsS \
       "type": "FactSet",
       "facts": [
         { "title": "Service", "value": "teams-relay" },
-        { "title": "Transport", "value": "Bot Framework" },
+        { "title": "Transport", "value": "Agents SDK" },
         { "title": "Payload", "value": "AdaptiveCard" }
       ]
     }

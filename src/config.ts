@@ -9,7 +9,7 @@ const envSchema = z.object({
   CLIENT_SECRET: z.string().optional(),
   BOT_TENANT_ID: z.string().optional(),
   TENANT_ID: z.string().optional(),
-  BOT_APP_TYPE: z.enum(["SingleTenant", "MultiTenant", "UserAssignedMSI"]).default("SingleTenant"),
+  BOT_SERVICE_URL_HOSTS: z.string().default(""),
   STORAGE_BACKEND: z.enum(["dynamodb", "sqlite"]).default("dynamodb"),
   DYNAMODB_ENDPOINT: z.string().optional(),
   DYNAMODB_REGION: z.string().default("us-east-1"),
@@ -44,13 +44,25 @@ if (!botTenantId) {
   throw new Error("Missing BOT_TENANT_ID or TENANT_ID");
 }
 
+if (process.env.BOT_APP_TYPE) {
+  console.warn(
+    "[config] BOT_APP_TYPE is no longer supported and is ignored. Client-secret auth against BOT_TENANT_ID is always used; multi-tenant bots are not supported.",
+  );
+}
+
 export const config = {
   port: rawEnv.PORT,
   internalPort: rawEnv.INTERNAL_PORT,
   botAppId,
   botAppPassword,
   botTenantId,
-  botAppType: rawEnv.BOT_APP_TYPE,
+  botServiceUrlHosts: [
+    "smba.trafficmanager.net",
+    "botframework.com",
+    ...rawEnv.BOT_SERVICE_URL_HOSTS.split(",")
+      .map((host) => host.trim())
+      .filter(Boolean),
+  ],
   storageBackend: rawEnv.STORAGE_BACKEND,
   dynamo: {
     endpoint: rawEnv.DYNAMODB_ENDPOINT,

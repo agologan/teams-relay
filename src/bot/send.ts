@@ -1,4 +1,5 @@
-import { ActivityTypes, CardFactory, type Activity } from "botbuilder";
+import { ActivityTypes, type Activity } from "@microsoft/agents-activity";
+import { AzureBotScope, CardFactory } from "@microsoft/agents-hosting";
 
 import { adapter } from "./adapter";
 import { config } from "../config";
@@ -130,10 +131,10 @@ export const sendToTeamsChannel = async (target: SendTarget, activity: Activity)
     config.botAppId,
     "msteams",
     target.serviceUrl,
-    "",
+    AzureBotScope,
     conversationParameters,
     async (context) => {
-      conversationId = context.activity.conversation.id;
+      conversationId = context.activity.conversation?.id;
       activityId = context.activity.id;
     },
   );

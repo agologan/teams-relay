@@ -29,7 +29,7 @@ curl -fsS \
       "activitySubtitle": "Office 365 connector card payload",
       "facts": [
         { "name": "Service", "value": "teams-relay" },
-        { "name": "Transport", "value": "Bot Framework" },
+        { "name": "Transport", "value": "Agents SDK" },
         { "name": "Payload", "value": "MessageCard" }
       ],
       "markdown": true

@@ -14,13 +14,16 @@ let app;
 let internalApp;
 let setServerRuntimeDeps;
 let resetServerRuntimeDeps;
+let createPublicServer;
 
 before(async () => {
   const server = await import("../src/server.ts");
+  const botEndpoint = await import("../src/server/botEndpoint.ts");
   app = server.app;
   internalApp = server.internalApp;
   setServerRuntimeDeps = server.setServerRuntimeDeps;
   resetServerRuntimeDeps = server.resetServerRuntimeDeps;
+  createPublicServer = botEndpoint.createPublicServer;
 });
 
 const makeDeps = ({
@@ -90,6 +93,132 @@ test("public root returns service shape", async () => {
     ok: true,
     service: "teams-relay",
   });
+});
+
+test("Agents SDK endpoint rejects requests without bearer authentication", async () => {
+  const botServer = createPublicServer(app);
+  await new Promise((resolve) => botServer.listen(0, "127.0.0.1", resolve));
+
+  try {
+    const address = botServer.address();
+    assert.ok(address && typeof address !== "string");
+
+    const res = await fetch(`http://127.0.0.1:${address.port}/api/messages`, {
+      method: "POST",
+      headers: { "content-type": "application/json", connection: "close" },
+      body: JSON.stringify({}),
+    });
+
+    assert.equal(res.status, 401);
+    assert.match((await res.json())["jwt-auth-error"], /authorization header not found/);
+  } finally {
+    await new Promise((resolve, reject) => {
+      botServer.close((error) => (error ? reject(error) : resolve()));
+    });
+  }
+});
+
+test("Agents SDK endpoint rejects malformed authorization header", async () => {
+  const botServer = createPublicServer(app);
+  await new Promise((resolve) => botServer.listen(0, "127.0.0.1", resolve));
+
+  try {
+    const address = botServer.address();
+    assert.ok(address && typeof address !== "string");
+
+    const res = await fetch(`http://127.0.0.1:${address.port}/api/messages`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        connection: "close",
+        authorization: "Basic abc",
+      },
+      body: JSON.stringify({}),
+    });
+
+    assert.equal(res.status, 401);
+  } finally {
+    await new Promise((resolve, reject) => {
+      botServer.close((error) => (error ? reject(error) : resolve()));
+    });
+  }
+});
+
+test("bot endpoint enforces channel and exact service URL", async () => {
+  const { adapter, serviceUrlPolicy } = await import("../src/bot/adapter.ts");
+  const original = {
+    authorizeRequest: adapter.authorizeRequest,
+    process: adapter.process,
+  };
+  const serviceUrl = "https://smba.trafficmanager.net/amer/";
+  let identity = { iss: "https://api.botframework.com", serviceurl: serviceUrl };
+  let processed = 0;
+  adapter.authorizeRequest = async (req, _res, next) => {
+    req.user = identity;
+    next();
+  };
+  adapter.process = async (req, res) => {
+    processed++;
+    assert.equal(req.body.serviceUrl, serviceUrl);
+    res.status(200).end();
+  };
+
+  const botServer = createPublicServer(app);
+  await new Promise((resolve) => botServer.listen(0, "127.0.0.1", resolve));
+  const url = `http://127.0.0.1:${botServer.address().port}/api/messages`;
+  const request = (body) =>
+    fetch(url, {
+      method: "POST",
+      headers: { authorization: "Bearer token", connection: "close" },
+      body: typeof body === "string" ? body : JSON.stringify(body),
+    });
+  const activity = { channelId: "msteams", serviceUrl };
+
+  try {
+    assert.equal((await request(activity)).status, 200);
+    assert.equal(processed, 1);
+    assert.equal((await request({ ...activity, channelId: "webchat" })).status, 401);
+    assert.equal((await request({ ...activity, serviceUrl: `${serviceUrl}other` })).status, 401);
+    identity = { iss: "https://api.botframework.com" };
+    assert.equal((await request(activity)).status, 401);
+    identity = { iss: "https://api.botframework.com", serviceurl: "https://attacker.example/" };
+    assert.equal((await request({ ...activity, serviceUrl: identity.serviceurl })).status, 401);
+    assert.equal((await request("{")).status, 400);
+    assert.equal((await request("x".repeat(1024 * 1024 + 1))).status, 413);
+    assert.equal(processed, 1);
+    assert.equal(serviceUrlPolicy.isAllowed("http://smba.trafficmanager.net/amer/"), false);
+    assert.equal(
+      serviceUrlPolicy.isAllowed("https://smba.trafficmanager.net.attacker.example/"),
+      false,
+    );
+    assert.equal(serviceUrlPolicy.isAllowed("https://smba.trafficmanager.net/amer/"), true);
+  } finally {
+    adapter.authorizeRequest = original.authorizeRequest;
+    adapter.process = original.process;
+    await new Promise((resolve, reject) =>
+      botServer.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+});
+
+test("sendToTeamsChannel requests Bot Framework token scope", async () => {
+  const { adapter } = await import("../src/bot/adapter.ts");
+  const { sendToTeamsChannel } = await import("../src/bot/send.ts");
+  let args;
+  const original = adapter.createConversationAsync;
+  adapter.createConversationAsync = async (...a) => {
+    args = a;
+  };
+
+  try {
+    await sendToTeamsChannel(
+      { channelId: "19:x@thread.tacv2", serviceUrl: "https://smba.trafficmanager.net/amer/" },
+      { type: "message", text: "hi" },
+    );
+    assert.equal(args[3], "https://api.botframework.com");
+  } finally {
+    adapter.createConversationAsync = original;
+  }
 });
 
 test("internal health returns API shape", async () => {

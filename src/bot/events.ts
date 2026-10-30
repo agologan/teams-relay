@@ -1,4 +1,4 @@
-import type { TurnContext } from "botbuilder";
+import type { TurnContext } from "@microsoft/agents-hosting";
 
 export type TeamsContextSnapshot = {
   tenantId: string;
@@ -33,10 +33,16 @@ export const getTeamsContextSnapshot = (context: TurnContext): TeamsContextSnaps
     throw new Error("Missing team id in Teams activity");
   }
 
+  const serviceUrl = context.activity.serviceUrl;
+
+  if (!serviceUrl) {
+    throw new Error("Missing service URL in Teams activity");
+  }
+
   return {
     tenantId,
     teamId,
-    serviceUrl: context.activity.serviceUrl,
+    serviceUrl,
   };
 };
 
