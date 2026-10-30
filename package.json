@@ -17,22 +17,22 @@
     "test": "node --import tsx --test tests/*.test.js"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1129.0",
-    "@aws-sdk/lib-dynamodb": "^3.1129.0",
-    "@hono/node-server": "^2.1.1",
+    "@aws-sdk/client-dynamodb": "^3.1159.0",
+    "@aws-sdk/lib-dynamodb": "^3.1159.0",
+    "@hono/node-server": "^2.1.5",
     "@microsoft/agents-activity": "^1.9.1",
     "@microsoft/agents-hosting": "^1.9.1",
     "@microsoft/agents-hosting-extensions-msteams": "^1.9.1",
-    "handlebars": "^4.7.9",
-    "hono": "^4.13.7",
-    "zod": "^4.6.1"
+    "handlebars": "^4.7.10",
+    "hono": "^4.13.14",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@types/node": "^24.13.4",
+    "@types/node": "^24.19.2",
     "ajv": "^8.20.0",
     "ajv-draft-04": "^1.0.0",
     "oxfmt": "^0.67.0",
-    "tsx": "^4.23.13",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   },
   "devEngines": {
@@ -43,7 +43,7 @@
     },
     "runtime": {
       "name": "node",
-      "version": "^26.0.0",
+      "version": "^26.13.0",
       "onFail": "download"
     }
   }
