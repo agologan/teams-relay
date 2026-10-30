@@ -73,6 +73,40 @@ jobs:
           format: sarif
           output: trivy-results.sarif
 
+      - name: Map image findings to Dockerfile preview
+        run: |
+          node <<'NODE'
+          const fs = require("node:fs");
+          const file = "trivy-results.sarif";
+          const sarif = JSON.parse(fs.readFileSync(file, "utf8"));
+
+          for (const run of sarif.runs ?? []) {
+            for (const result of run.results ?? []) {
+              const locations = result.locations ?? [];
+              const locationDetails = locations
+                .map((location) =>
+                  location.message?.text ??
+                  location.physicalLocation?.artifactLocation?.uri,
+                )
+                .filter(Boolean);
+
+              if (result.message?.text && locationDetails.length > 0) {
+                result.message.text = `${locationDetails.join("\n")}\n${result.message.text}`;
+              }
+
+              for (const location of locations) {
+                const physicalLocation = location.physicalLocation;
+                if (!physicalLocation?.artifactLocation) continue;
+
+                physicalLocation.artifactLocation.uri = "Dockerfile";
+                physicalLocation.region = { startLine: 1 };
+              }
+            }
+          }
+
+          fs.writeFileSync(file, `${JSON.stringify(sarif, null, 2)}\n`);
+          NODE
+
       - name: Upload scan results to GitHub code scanning
         uses: github/codeql-action/upload-sarif@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1
         with:
